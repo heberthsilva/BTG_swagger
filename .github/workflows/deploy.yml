@@ -1,4 +1,4 @@
-name: Deploy Swagger UI
+name: Build and Deploy Swagger
 
 on:
   push:
@@ -13,146 +13,544 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: true
+
 
 jobs:
 
   build:
 
+    name: Build Swagger Consolidado
+
     runs-on: ubuntu-latest
 
     steps:
 
-      # 1. Baixa o código do repositório
-      - name: Checkout
+      # ==========================================
+      # 1. Checkout
+      # ==========================================
+
+      - name: Checkout repository
+
         uses: actions/checkout@v4
 
 
-      # 2. Instala Python e PyYAML
+      # ==========================================
+      # 2. Mostrar ambiente
+      # ==========================================
+
+      - name: Verificar ambiente
+
+        run: |
+
+          echo "===================================="
+          echo "Ambiente GitHub Actions"
+          echo "===================================="
+
+          echo "Sistema operacional:"
+          uname -a
+
+          echo ""
+
+          echo "Diretório atual:"
+          pwd
+
+          echo ""
+
+          echo "Arquivos do projeto:"
+          ls -la
+
+          echo ""
+
+          echo "Arquivos dentro de apis:"
+          find apis -maxdepth 1 -type f -print
+
+
+      # ==========================================
+      # 3. Configurar Python
+      # ==========================================
+
       - name: Configurar Python
+
         uses: actions/setup-python@v5
+
         with:
+
           python-version: "3.x"
 
 
-      - name: Instalar PyYAML
+      # ==========================================
+      # 4. Instalar PyYAML
+      # ==========================================
+
+      - name: Instalar dependências
+
         run: |
+
+          python -m pip install --upgrade pip
+
           pip install pyyaml
 
 
-      # 3. Gera automaticamente o apis.json
-      - name: Gerar apis.json
+      # ==========================================
+      # 5. Consolidar todas as APIs
+      # ==========================================
+
+      - name: Consolidar especificações OpenAPI
+
         run: |
 
           python <<'PY'
 
           import os
-          import json
           import yaml
+          import copy
+
 
           APIS_DIR = "apis"
-          OUTPUT_FILE = "apis.json"
 
-          apis = []
+          OUTPUT_FILE = "api-consolidada.yaml"
 
-          # Procura todos os arquivos YAML dentro de /apis
+
+          print("")
+          print("========================================")
+          print("CONSOLIDAÇÃO DAS APIs")
+          print("========================================")
+          print("")
+
+
+          # Documento OpenAPI final
+
+          consolidated = {
+
+              "openapi": "3.0.3",
+
+              "info": {
+
+                  "title": "BTG Developer APIs",
+
+                  "version": "1.0.0",
+
+                  "description": (
+                      "Documentação consolidada das APIs "
+                      "BTG Developer APIs."
+                  )
+
+              },
+
+              "servers": [],
+
+              "tags": [],
+
+              "paths": {},
+
+              "components": {}
+
+          }
+
+
+          # Contadores
+
+          total_apis = 0
+
+          total_paths = 0
+
+
+          # ========================================
+          # Percorre todos os YAMLs
+          # ========================================
+
           for filename in sorted(os.listdir(APIS_DIR)):
 
-              # Aceita .yaml e .yml
-              if not filename.lower().endswith((".yaml", ".yml")):
+
+              if not filename.lower().endswith(
+                  (".yaml", ".yml")
+              ):
+
                   continue
 
-              filepath = os.path.join(APIS_DIR, filename)
 
-              try:
+              filepath = os.path.join(
+                  APIS_DIR,
+                  filename
+              )
 
-                  # Abre o YAML
-                  with open(filepath, "r", encoding="utf-8") as file:
-                      document = yaml.safe_load(file)
 
-                  # Pega o título definido em info.title
-                  title = (
-                      document
-                      .get("info", {})
-                      .get("title")
-                  )
+              print(
+                  f"Processando: {filename}"
+              )
 
-                  # Se não existir título, usa o nome do arquivo
-                  if not title:
-                      title = os.path.splitext(filename)[0]
 
-                  apis.append({
-                      "name": title,
-                      "file": filename
-                  })
+              # Carrega YAML
 
-                  print(f"API encontrada: {title} -> {filename}")
+              with open(
+                  filepath,
+                  "r",
+                  encoding="utf-8"
+              ) as file:
 
-              except Exception as error:
+                  api = yaml.safe_load(file)
+
+
+              if not api:
 
                   print(
-                      f"ERRO ao processar {filename}: {error}"
+                      f"AVISO: {filename} está vazio."
                   )
 
-                  raise
+                  continue
 
 
-          # Gera o apis.json
+              total_apis += 1
+
+
+              # ====================================
+              # Nome da API
+              # ====================================
+
+              api_title = (
+
+                  api
+                  .get("info", {})
+                  .get(
+                      "title",
+                      os.path.splitext(filename)[0]
+                  )
+
+              )
+
+
+              print(
+                  f"  Nome: {api_title}"
+              )
+
+
+              # ====================================
+              # Adiciona TAG da API
+              # ====================================
+
+              api_tag = {
+
+                  "name": api_title,
+
+                  "description":
+                      f"Endpoints da {api_title}"
+
+              }
+
+
+              consolidated[
+                  "tags"
+              ].append(api_tag)
+
+
+              # ====================================
+              # Servers
+              # ====================================
+
+              for server in api.get(
+                  "servers",
+                  []
+              ):
+
+                  if server not in consolidated[
+                      "servers"
+                  ]:
+
+                      consolidated[
+                          "servers"
+                      ].append(server)
+
+
+              # ====================================
+              # PATHS
+              # ====================================
+
+              for path, methods in api.get(
+                  "paths",
+                  {}
+              ).items():
+
+
+                  total_paths += 1
+
+
+                  # Cria uma cópia para não alterar
+                  # o YAML original
+
+                  methods_copy = copy.deepcopy(
+                      methods
+                  )
+
+
+                  # ==================================
+                  # Adiciona TAG automaticamente
+                  # ==================================
+
+                  for method, operation in methods_copy.items():
+
+
+                      if not isinstance(
+                          operation,
+                          dict
+                      ):
+
+                          continue
+
+
+                      # Ignora parâmetros globais
+
+                      if method.lower() == "parameters":
+
+                          continue
+
+
+                      # Se não tiver tags,
+                      # usa o nome da API
+
+                      if not operation.get(
+                          "tags"
+                      ):
+
+                          operation[
+                              "tags"
+                          ] = [
+                              api_title
+                          ]
+
+
+                  # ==================================
+                  # Se o PATH já existir
+                  # ==================================
+
+                  if path in consolidated[
+                      "paths"
+                  ]:
+
+
+                      print(
+                          "  AVISO: Path duplicado:"
+                      )
+
+                      print(
+                          f"  {path}"
+                      )
+
+
+                      # Junta os métodos
+
+                      consolidated[
+                          "paths"
+                      ][path].update(
+                          methods_copy
+                      )
+
+
+                  else:
+
+
+                      consolidated[
+                          "paths"
+                      ][path] = methods_copy
+
+
+              # ====================================
+              # COMPONENTS
+              # ====================================
+
+              components = api.get(
+                  "components",
+                  {}
+              )
+
+
+              for component_type, values in components.items():
+
+
+                  if component_type not in consolidated[
+                      "components"
+                  ]:
+
+                      consolidated[
+                          "components"
+                      ][component_type] = {}
+
+
+                  for name, value in values.items():
+
+
+                      if name in consolidated[
+                          "components"
+                      ][component_type]:
+
+
+                          print(
+                              "  AVISO: Componente duplicado:"
+                          )
+
+                          print(
+                              f"  {component_type}/{name}"
+                          )
+
+
+                      else:
+
+
+                          consolidated[
+                              "components"
+                          ][component_type][
+                              name
+                          ] = value
+
+
+          # ==========================================
+          # Remove components vazios
+          # ==========================================
+
+          consolidated[
+              "components"
+          ] = {
+
+              key: value
+
+              for key, value in consolidated[
+                  "components"
+              ].items()
+
+              if value
+
+          }
+
+
+          # ==========================================
+          # Salva arquivo final
+          # ==========================================
+
           with open(
               OUTPUT_FILE,
               "w",
               encoding="utf-8"
           ) as file:
 
-              json.dump(
-                  apis,
+              yaml.safe_dump(
+
+                  consolidated,
+
                   file,
-                  ensure_ascii=False,
-                  indent=4
+
+                  allow_unicode=True,
+
+                  sort_keys=False
+
               )
 
-          print("")
-          print("apis.json gerado com sucesso:")
+
           print("")
 
           print(
-              json.dumps(
-                  apis,
-                  ensure_ascii=False,
-                  indent=4
-              )
+              "========================================"
           )
+
+          print(
+              "CONSOLIDAÇÃO CONCLUÍDA"
+          )
+
+          print(
+              "========================================"
+          )
+
+          print(
+              f"APIs encontradas: {total_apis}"
+          )
+
+          print(
+              f"Paths encontrados: {total_paths}"
+          )
+
+          print(
+              f"Arquivo gerado: {OUTPUT_FILE}"
+          )
+
+          print("")
+
 
           PY
 
 
-      # 4. Configura GitHub Pages
-      - name: Configurar Pages
+      # ==========================================
+      # 6. Exibir arquivo consolidado
+      # ==========================================
+
+      - name: Validar arquivo consolidado
+
+        run: |
+
+          echo "===================================="
+
+          echo "Arquivo consolidado:"
+
+          echo "===================================="
+
+          ls -lh api-consolidada.yaml
+
+          echo ""
+
+          echo "Primeiras linhas:"
+
+          head -100 api-consolidada.yaml
+
+
+      # ==========================================
+      # 7. Configurar GitHub Pages
+      # ==========================================
+
+      - name: Configurar GitHub Pages
+
         uses: actions/configure-pages@v5
 
 
-      # 5. Cria o pacote que será publicado
+      # ==========================================
+      # 8. Preparar publicação
+      # ==========================================
+
       - name: Upload artifact
+
         uses: actions/upload-pages-artifact@v3
+
         with:
+
           path: "."
 
 
+  # ============================================
+  # DEPLOY
+  # ============================================
+
   deploy:
 
+    name: Deploy GitHub Pages
+
     environment:
+
       name: github-pages
+
       url: ${{ steps.deployment.outputs.page_url }}
+
 
     runs-on: ubuntu-latest
 
+
     needs:
+
       - build
+
 
     steps:
 
-      # 6. Publica no GitHub Pages
-      - name: Deploy para GitHub Pages
+
+      - name: Deploy
+
         id: deployment
+
         uses: actions/deploy-pages@v4

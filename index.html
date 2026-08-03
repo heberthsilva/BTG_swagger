@@ -5,17 +5,22 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
 <title>BTG Developer APIs</title>
 
-<link rel="stylesheet" href="swagger-ui.css"/>
+<link rel="stylesheet"
+      href="swagger-ui.css"/>
 
 <style>
 
 body {
+
     margin: 0;
+
     font-family: Arial, sans-serif;
+
 }
 
 header {
@@ -24,55 +29,11 @@ header {
 
     color: white;
 
-    padding: 12px 20px;
+    padding: 16px 25px;
 
-    font-size: 22px;
+    font-size: 24px;
 
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-}
-
-select {
-
-    font-size: 16px;
-
-    padding: 6px;
-
-    border-radius: 5px;
-
-    min-width: 250px;
-
-}
-
-#error {
-
-    display: none;
-
-    background: #ffe5e5;
-
-    color: #b00020;
-
-    padding: 15px;
-
-    margin: 15px;
-
-    border-radius: 5px;
-
-    font-family: monospace;
-
-    white-space: pre-wrap;
-
-}
-
-#loading {
-
-    padding: 20px;
-
-    font-size: 18px;
+    font-weight: bold;
 
 }
 
@@ -80,31 +41,16 @@ select {
 
 </head>
 
+
 <body>
 
 
 <header>
 
-<div>
 BTG Developer APIs
-</div>
-
-<select id="apiList">
-
-<option>
-Carregando APIs...
-</option>
-
-</select>
 
 </header>
 
-
-<div id="error"></div>
-
-<div id="loading">
-Carregando documentação...
-</div>
 
 <div id="swagger-ui"></div>
 
@@ -117,65 +63,28 @@ Carregando documentação...
 <script>
 
 
-let ui;
+window.onload = function() {
 
 
-const combo = document.getElementById("apiList");
+    SwaggerUIBundle({
 
-const swaggerContainer = document.getElementById("swagger-ui");
-
-const errorContainer = document.getElementById("error");
-
-const loadingContainer = document.getElementById("loading");
-
-
-
-function showError(message) {
-
-    errorContainer.style.display = "block";
-
-    errorContainer.textContent = message;
-
-    loadingContainer.style.display = "none";
-
-}
-
-
-
-function clearError() {
-
-    errorContainer.style.display = "none";
-
-    errorContainer.textContent = "";
-
-}
-
-
-
-function load(file) {
-
-    clearError();
-
-    loadingContainer.style.display = "block";
-
-    swaggerContainer.innerHTML = "";
-
-
-    const url = "apis/" + encodeURIComponent(file);
-
-
-    console.log("Carregando OpenAPI:");
-
-    console.log(url);
-
-
-    ui = SwaggerUIBundle({
-
-        url: url,
+        url: "api-consolidada.yaml",
 
         dom_id: "#swagger-ui",
 
         deepLinking: true,
+
+        displayOperationId: false,
+
+        defaultModelsExpandDepth: 1,
+
+        defaultModelExpandDepth: 1,
+
+        docExpansion: "list",
+
+        filter: true,
+
+        persistAuthorization: true,
 
         presets: [
 
@@ -185,132 +94,12 @@ function load(file) {
 
         ],
 
-        layout: "BaseLayout",
-
-
-        onComplete: function() {
-
-            loadingContainer.style.display = "none";
-
-            console.log(
-                "Swagger carregado com sucesso:",
-                file
-            );
-
-        }
+        layout: "BaseLayout"
 
     });
 
-}
 
-
-
-async function init() {
-
-    try {
-
-
-        console.log("Buscando apis.json...");
-
-
-        const response = await fetch(
-            "apis.json",
-            {
-                cache: "no-cache"
-            }
-        );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                "Não foi possível carregar apis.json. " +
-                "HTTP " +
-                response.status
-            );
-
-        }
-
-
-        const apis = await response.json();
-
-
-        if (!Array.isArray(apis)) {
-
-            throw new Error(
-                "apis.json não contém uma lista válida de APIs."
-            );
-
-        }
-
-
-        if (apis.length === 0) {
-
-            throw new Error(
-                "Nenhuma API foi encontrada."
-            );
-
-        }
-
-
-        // Limpa o dropdown
-        combo.innerHTML = "";
-
-
-        // Adiciona cada API encontrada
-        apis.forEach(api => {
-
-
-            const option =
-                document.createElement("option");
-
-
-            option.value = api.file;
-
-
-            option.textContent = api.name;
-
-
-            combo.appendChild(option);
-
-
-        });
-
-
-        // Quando o usuário troca a API
-        combo.addEventListener(
-            "change",
-            function() {
-
-                load(this.value);
-
-            }
-        );
-
-
-        // Carrega a primeira API
-        load(apis[0].file);
-
-
-    } catch (error) {
-
-
-        console.error(error);
-
-
-        showError(
-            "Erro ao carregar as APIs:\n\n" +
-            error.message
-        );
-
-
-    }
-
-}
-
-
-
-init();
+};
 
 
 </script>

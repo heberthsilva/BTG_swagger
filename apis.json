@@ -1,30 +1,30 @@
-[
-    {
-        "name": "Autenticação",
-        "file": "Autorizadora.yaml"
-    },
-    {
-        "name": "Conta Corrente",
-        "file": "base_conta.yaml"
-    },
-    {
-        "name": "Dados Cadastrais",
-        "file": "dados_cadastrais.yaml"
-    },
-    {
-        "name": "Debentures",
-        "file": "debentures.yaml"
-    },
-    {
-        "name": "Perfil Investimentos",
-        "file": "perfil_investimento.yaml"
-    },
-    {
-        "name": "Movimentações TED/Pix",
-        "file": "mov_ted_pix.yaml"
-    },
-    {
-        "name": "Movimentações",
-        "file": "movimentacoes.yaml"
-    }
-]
+// [
+//     {
+//         "name": "Autenticação",
+//         "file": "Autorizadora.yaml"
+//     },
+//     {
+//         "name": "Conta Corrente",
+//         "file": "base_conta.yaml"
+//     },
+//     {
+//         "name": "Dados Cadastrais",
+//         "file": "dados_cadastrais.yaml"
+//     },
+//     {
+//         "name": "Debentures",
+//         "file": "debentures.yaml"
+//     },
+//     {
+//         "name": "Perfil Investimentos",
+//         "file": "perfil_investimento.yaml"
+//     },
+//     {
+//         "name": "Movimentações TED/Pix",
+//         "file": "mov_ted_pix.yaml"
+//     },
+//     {
+//         "name": "Movimentações",
+//         "file": "movimentacoes.yaml"
+//     }
+// ]
