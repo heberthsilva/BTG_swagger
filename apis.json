@@ -1,18 +1,30 @@
 [
     {
-        "name":"Fundos",
-        "file":"fundos.yaml"
+        "name": "Autenticação",
+        "file": "Autorizadora.yaml"
     },
     {
-        "name":"Conta Corrente",
-        "file":"conta.yaml"
+        "name": "Conta Corrente",
+        "file": "base_conta.yaml"
     },
     {
-        "name":"PIX",
-        "file":"pix.yaml"
+        "name": "Dados Cadastrais",
+        "file": "dados_cadastrais.yaml"
     },
     {
-        "name":"Câmbio",
-        "file":"cambio.yaml"
+        "name": "Debentures",
+        "file": "debentures.yaml"
+    }
+    {
+        "name": "Perfil Investimentos",
+        "file": "perfil_investimento.yaml"
+    },
+    {
+        "name": "Movimentações TED/Pix",
+        "file": "mov_ted_pix.yaml"
+    },
+    {
+        "name": "Movimentações",
+        "file": "movimentacoes.yaml"
     }
 ]
