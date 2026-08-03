@@ -1,0 +1,158 @@
+name: Deploy Swagger UI
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # 1. Baixa o código do repositório
+      - name: Checkout
+        uses: actions/checkout@v4
+
+
+      # 2. Instala Python e PyYAML
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+
+      - name: Instalar PyYAML
+        run: |
+          pip install pyyaml
+
+
+      # 3. Gera automaticamente o apis.json
+      - name: Gerar apis.json
+        run: |
+
+          python <<'PY'
+
+          import os
+          import json
+          import yaml
+
+          APIS_DIR = "apis"
+          OUTPUT_FILE = "apis.json"
+
+          apis = []
+
+          # Procura todos os arquivos YAML dentro de /apis
+          for filename in sorted(os.listdir(APIS_DIR)):
+
+              # Aceita .yaml e .yml
+              if not filename.lower().endswith((".yaml", ".yml")):
+                  continue
+
+              filepath = os.path.join(APIS_DIR, filename)
+
+              try:
+
+                  # Abre o YAML
+                  with open(filepath, "r", encoding="utf-8") as file:
+                      document = yaml.safe_load(file)
+
+                  # Pega o título definido em info.title
+                  title = (
+                      document
+                      .get("info", {})
+                      .get("title")
+                  )
+
+                  # Se não existir título, usa o nome do arquivo
+                  if not title:
+                      title = os.path.splitext(filename)[0]
+
+                  apis.append({
+                      "name": title,
+                      "file": filename
+                  })
+
+                  print(f"API encontrada: {title} -> {filename}")
+
+              except Exception as error:
+
+                  print(
+                      f"ERRO ao processar {filename}: {error}"
+                  )
+
+                  raise
+
+
+          # Gera o apis.json
+          with open(
+              OUTPUT_FILE,
+              "w",
+              encoding="utf-8"
+          ) as file:
+
+              json.dump(
+                  apis,
+                  file,
+                  ensure_ascii=False,
+                  indent=4
+              )
+
+          print("")
+          print("apis.json gerado com sucesso:")
+          print("")
+
+          print(
+              json.dumps(
+                  apis,
+                  ensure_ascii=False,
+                  indent=4
+              )
+          )
+
+          PY
+
+
+      # 4. Configura GitHub Pages
+      - name: Configurar Pages
+        uses: actions/configure-pages@v5
+
+
+      # 5. Cria o pacote que será publicado
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "."
+
+
+  deploy:
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+
+    needs:
+      - build
+
+    steps:
+
+      # 6. Publica no GitHub Pages
+      - name: Deploy para GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
