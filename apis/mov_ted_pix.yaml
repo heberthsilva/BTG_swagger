@@ -1,0 +1,273 @@
+openapi: 3.0.1
+info:
+  title: 'API de Movimentações TED/PIX'
+  description: API de consulta de relatório de Informação de histórico de movimentações TED/PIX
+  version: 3.1.2.0
+servers:
+- url: https://api.btgpactual.com/api-partner-report-hub
+paths:
+  /api/v1/report/movements-historic:
+    get:
+      tags:
+      - get-movements-historic-by-partner
+      description: |
+        Endpoint responsável pela busca de movimentações históricas de TED/PIX por parceiro.
+
+        ***Uma vez solicitado, os dados informados permanecerão estáticos pelas próximas 3 horas.***
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Histórico de Movimentações TED/PIX (partner-report-movements-historic)**. 
+        
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 10 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: Todos os registros até D-1
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        "202":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              description: Id pactual da operação
+              style: simple
+              schema:
+                type: string
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /api/v1/report/movements-historic-by-period:
+    post:
+      tags:
+      - post-movements-historic-by-partner-and-period
+      description: |
+        Endpoint responsável pela busca de movimentações históricas de TED/PIX por parceiro e período. Este intervalo não pode ser maior que 30 dias entre a data de início e data de fim.
+
+        **Exemplo:**
+
+        Passando a data início: 03/04/2023.
+
+        A data fim terá de ser entre 03/04/2023 até 03/05/2023 ou será lançado uma mensagem informando que a data não está no período válido.
+
+        ***Uma vez solicitado, os dados informados permanecerão estáticos pelas próximas 3 horas.***
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Histórico de Movimentações TED/PIX por Período (partner-report-movements-historic-by-period)**. 
+        
+        Sua documentação pode ser encontrada na página de Webhook. 
+        
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+        
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 10 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: Todos os registros até D-1
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DateFilterDTO'
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /api/v1/report/movements-now:
+    get:
+      tags:
+      - get-movements-now-by-partner
+      description: |
+        Endpoint responsável pela busca de movimentações em D0 de TED/PIX por parceiro.
+
+        ***Uma vez solicitado, os dados informados permanecerão estáticos pelas próximas 3 horas.***
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Histórico de Movimentações TED/PIX em D0 (partner-report-movements-now)**. 
+        
+        Sua documentação pode ser encontrada na página de Webhook. 
+        
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+        
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 10 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: Todos os registros em D0
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ErrorMetadata:
+      type: object
+      properties:
+        globalErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: object
+    ResponseError:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        meta:
+          $ref: '#/components/schemas/ErrorMetadata'
+    DateFilterDTO:
+      required:
+      - startDate
+      - endDate
+      type: object
+      properties:
+        startDate:
+          type: string
+          description: data início (yyyy-MM-dd)
+          format: date
+          example: "2021-12-31"
+        endDate:
+          type: string
+          description: data fim (yyyy-MM-dd)
+          format: date
+          example: "2021-12-31"

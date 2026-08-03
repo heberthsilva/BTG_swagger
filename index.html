@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>BTG Developer APIs</title>
+
+<link rel="stylesheet" href="swagger-ui.css"/>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Arial;
+}
+
+header{
+
+    background:#1d3557;
+    color:white;
+
+    padding:12px 20px;
+
+    font-size:22px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+}
+
+select{
+
+    font-size:16px;
+
+    padding:6px;
+
+    border-radius:5px;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<div>
+
+BTG Developer APIs
+
+</div>
+
+<select id="apiList">
+
+</select>
+
+</header>
+
+<div id="swagger-ui"></div>
+
+<script src="swagger-ui-bundle.js"></script>
+
+<script src="swagger-ui-standalone-preset.js"></script>
+
+<script>
+
+let ui;
+
+fetch("apis.json")
+
+.then(r=>r.json())
+
+.then(async apis=>{
+
+    const combo=document.getElementById("apiList");
+
+    apis.forEach(api=>{
+
+        const op=document.createElement("option");
+
+        op.value=api.file;
+
+        op.innerHTML=api.name;
+
+        combo.appendChild(op);
+
+    });
+
+    function load(file){
+
+        if(ui){
+
+            document.getElementById("swagger-ui").innerHTML="";
+
+        }
+
+        ui=SwaggerUIBundle({
+
+            url:"apis/"+file,
+
+            dom_id:"#swagger-ui",
+
+            deepLinking:true,
+
+            presets:[
+
+                SwaggerUIBundle.presets.apis,
+
+                SwaggerUIStandalonePreset
+
+            ],
+
+            layout:"BaseLayout"
+
+        });
+
+    }
+
+    combo.onchange=()=>load(combo.value);
+
+    load(apis[0].file);
+
+});
+
+</script>
+
+</body>
+
+</html>

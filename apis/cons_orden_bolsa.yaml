@@ -1,0 +1,130 @@
+openapi: 3.0.1
+info:
+  title: Consulta de ordens da bolsa.
+  description: "Api responsável por buscar ordens na bolsa, o resultado será retornado de forma assíncrona por Webhook (à ser cadastrado pelo Portal do Desenvolvedor)."
+  version: 3.1.1.2
+servers:
+- url: https://api.btgpactual.com/iaas-push-trade-report
+paths:
+  /api/v1/push-trade/report:
+    post:
+      tags:
+      - post-push-trade-report
+      description:  |
+        Endpoint responsável pela busca de ordens da bolsa.
+        
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Push de Ordens na Bolsa (push-trade-report)**. 
+        
+        Sua documentação pode ser encontrada na página de Webhook. 
+        
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+        
+        **Relatório de Push de Ordens na Bolsa (push-trade-report)**.
+        
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+      operationId: pushTradeReport
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderReportFilterDTO'
+        required: false
+      responses:
+        "202":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              style: simple
+              schema:
+                type: string
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        "400":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ErrorMetadata:
+      type: object
+      properties:
+        globalErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: object
+    ResponseError:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        meta:
+          $ref: '#/components/schemas/ErrorMetadata'
+    OrderReportFilterDTO:
+      type: object
+      properties:
+        startDate:
+          type: string
+          description: O período máximo para consulta de ordens é de 30 dias
+          format: date-time
+          example: "2021-12-29T00:00:00.000Z"
+        endDate:
+          type: string
+          description: O período máximo para consulta de ordens é de 30 dias
+          format: date-time
+          example: "2022-01-15T00:00:00.000Z"
+        accountNumber:
+          type: string
+          description: o número da conta deve ser válido
+          example: "123456789"

@@ -1,0 +1,1080 @@
+openapi: 3.0.1
+info:
+  title: Visualização de Análise de Carteira Recomendada
+  description: Api responsável por consultar análise de carteira recomendada.
+  version: 3.1.1.0
+servers:
+  - url: https://api.btgpactual.com/iaas-recommended-equities
+paths:
+  /api/v1/recommended-equities-allocation:
+    get:
+      tags:
+        - get-recommended-equities-allocation
+      summary: Busca de análise de carteira recomendada.
+      description: |
+        Consulta a análise de carteira recomendada.
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+      operationId: getRecommendedEquitiesAllocation
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        "200":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              description: Id pactual da operação
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EquitiesResponseDTO"
+        "400":
+          description: Erro no headers da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/recommended-equities-allocation/portfolio:
+    get:
+      tags:
+        - get-recommended-equities-portfolio
+      summary: Busca de portifolio de carteira recomendada.
+      description: |
+        Consulta a análise de carteira recomendada.
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+      operationId: getRecommendedEquitiesAllocationPortfolio
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        "200":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              description: Id pactual da operação
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EquitiesPortfolioResponseDTO"
+        "400":
+          description: Erro no headers da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Erro no headers da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/recommended-equities-allocation/analysis:
+    post:
+      tags:
+        - post-recommended-equities-analysis
+      summary: Busca de análise de carteira recomendada para o Parceiro.
+      description: |
+        Consulta a análise de carteira recomendada.
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+      operationId: getRecommendedEquitiesAllocationAnalysis
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FiltersDTO"
+      responses:
+        "200":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              description: Id pactual da operação
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  paging:
+                    $ref: "#/components/schemas/PagingDTO"
+                  response:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/EquitiesAnalysisResponseDTO"
+                  
+        "400":
+          description: Erro no headers da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Erro no headers da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/recommended-equities-operation/period:
+    post:
+      tags:
+        - post-recommended-equities-operation-by-period
+      summary: Operações da conta por período (apenas ativos de Carteira Recomendada do Parceiro).
+      description: |
+        Consulta as operações por conta e periodo, considerando apenas os ativos adquiridos através da Análise de Carteira Recomendada do Parceiro.
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+
+      operationId: getRecommendedEquitiesOperationByPeriod
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestOperationsDTO"
+      responses:
+        "200":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              description: Id pactual da operação
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/OperationResponseDTO"
+        "400":
+          description: Erro no headers da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ErrorMetadata:
+      type: object
+      properties:
+        globalErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Error"
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: object
+    ResponseError:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        meta:
+          $ref: "#/components/schemas/ErrorMetadata"
+    EquitiesResponseDTO:
+      type: object
+      title: Retorno da análise de carteira recomendada
+      description: |
+        Dicionário de dados - API de consulta e análise de carteira recomendada.
+
+        Este é o dicionário de dados com os possíveis valores de retorno.
+        A resposta terá formato 'json' com os seguintes campos:
+        ---
+      properties:
+        typeInitial:
+          type: string
+          description: A sigla do tipo da carteira
+          example: "DIV"
+        description:
+          type: string
+          description: A descrição da carteira naquele mês
+          example: "A carteira tem como objetivo encontrar as melhores empresas sob a ótica de geração total de valor ao acionista com foco na distribuição de proventos. Dessa forma, realizamos uma análise focada em ativos de alta qualidade, com resiliência de entrega de resultados e geração de caixa. A seleção dos ativos é feita de forma complementar entre a equipe de análise de empresas e estratégia do BTG Pactual, com uma revisão mensal da carteira."
+        name:
+          type: string
+          description: O nome da carteira
+          example: "Dividendos - Fevereiro/24"
+        fileName:
+          type: string
+          description: O endereço do arquivo com o relatório
+          example: "https://digital-research-uat.s3-sa-east-1.amazonaws.com/file/2024-02-02T121115.550_BTGDIVFEV24.pdf"
+        validityStart:
+          type: string
+          format: date-time
+          description: O inicio da vigência da carteira
+          example: "2024-02-01T00:00:00"
+        validityEnd:
+          type: string
+          format: date-time
+          description: O fim da vigência da carteira
+          example: "2024-02-29T23:59:59"
+        previousProfitability:
+          type: number
+          description: A rentabilidade do início da vigencia da carteira, do mês corrente, até o fechamento do dia anterior.
+          example: -1.1
+        accumulatedProfitability:
+          type: number
+          description: A rentabilidade acumulada desde o início da carteira, data de criação da carteira, até o fechamento do mês anterior.
+          example: 52.8
+        previousIndex:
+          type: number
+          description: O indexador da rentabilidade do início da vigência da carteira, do mês corrente, até o fechamento do dia anterior.
+          example: -3.5
+        accumulatedIndex:
+          type: number
+          description: O indexador da rentabilide acumulada desde o inicio da carteria, data de criação da carteira, até o fechamento do mês anterior.
+          example: 43.0
+        buyable:
+          type: boolean
+          description: Indicador se a carteira está disponível para compra ou não
+          example: true
+        assets:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssetsDTO"
+    EquitiesPortfolioResponseDTO:
+      type: object
+      title: Retorno do portfólio de carteira recomendada
+      properties:
+        accumulatedIndex:
+          type: number
+          description: O indexador da rentabilidade acumulada.
+          example: 116.5
+        accumulatedProfitability:
+          type: number
+          description: A rentabilidade acumulada.
+          example: 171.2
+        authors:
+          type: array
+          description: Lista de autores
+          items:
+            $ref: "#/components/schemas/AuthorsDTO"
+        comparativeIndex:
+          type: string
+          description: O indexador comparativo da carteira
+          example: "IDIV"
+        description:
+          type: string
+          description: Descrição da carteira
+          example: "<p>A carteira tem como objetivo a seleção das melhores empresas sob a ótica de geração total de valor ao acionista com foco na distribuição de proventos.<p>"
+        fileName:
+          type: string
+          description: O nome do arquivo com o relatório
+          example: "https://content.btgpactual.com/research/files/file/2026-03-02T084617.423_BTGDIVMAR26.pdf"
+        hideContent:
+          type: boolean
+          description: Indicador se a carteira tem o conteúdo oculto ou não
+          example: false
+        id:
+          type: string
+          description: Identificador único da carteira recomendada
+          example: "69a5788b9f2ed82dda8a7674"
+        inAssets:
+          type: array
+          description: Lista de ativos que estão na carteira recomendada
+          items:
+            $ref: "#/components/schemas/InAssetsDTO"
+        inclusionTime:
+          type: string
+          format: date-time
+          description: A data e hora da inclusão da carteira recomendada
+          example: "2026-03-02T06:25:37.844-03:00"
+        name:
+          type: string
+          description: O nome da carteira recomendada
+          example: "Dividendos - Março/26"
+        noTagsDescription:
+          type: string
+          description: Descrição da carteira sem as tags de formatação
+          example: "A carteira tem como objetivo a seleção das melhores empresas sob a ótica de geração total de valor ao acionista com foco na distribuição de proventos."
+        outAssets:
+          type: array
+          description: Lista de ativos que saíram da carteira recomendada
+          items:
+            $ref: "#/components/schemas/OutAssetsDTO"
+        portfolioAsset:
+          type: array
+          description: Lista de ativos que estão na carteira recomendada
+          items:
+            $ref: "#/components/schemas/PortfolioAssetDTO"
+        portfolioType:
+          type: object
+          description: O tipo da carteira recomendada
+          properties:
+            channels:
+              type: array
+              description: Lista de canais relacionados a carteira recomendada
+              example: 
+                - "PUBLIC"
+                - "BANKERS"
+            description:
+              type: string
+              description: A descrição do tipo da carteira recomendada
+              example: "A carteira tem como objetivo encontrar as melhores empresas sob a ótica de distribuição de dividendos."
+            frequency:
+              type: string
+              description: A frequência de atualização da carteira recomendada
+              example: "TRIMESTRAL"
+            hideContent:
+              type: boolean
+              description: Indicador se o tipo da carteira recomendada tem o conteúdo oculto ou não
+              example: false
+            image:
+              type: string
+              description: URL da imagem do tipo da carteira recomendada
+              example: "https://digital-research-prd.s3-sa-east-1.amazonaws.com/file/2023-10-31T183554.999_Imagem.png"
+            initials:
+              type: string
+              description: As iniciais do tipo da carteira recomendada
+              example: "DIV"
+            name:
+              type: string
+              description: O nome do tipo da carteira recomendada
+              example: "Dividendo"
+            segments:
+              type: array
+              description: Lista de segmentos relacionados a carteira recomendada
+              example:
+                - "DIGITAL"
+                - "WM"
+                - "CORPORATE"
+        previousIndex:
+          type: number
+          description: O indexador da rentabilidade anterior
+          example: 4.4
+        previousProfitability:
+          type: number
+          description: A rentabilidade anterior.
+          example: 6.5
+        purchaseLink:
+          type: string
+          description: O link para compra da carteira recomendada
+          example: "https://app.btgpactual.com/?productType=HOMEBROKER&productID=recommended-wallets&hb_param=8150&origin=content_research"
+        sectorAllocation:
+          type: array
+          description: Lista de alocação por setor da carteira recomendada
+          items:
+            $ref: "#/components/schemas/SectorAllocationDTO"
+        tier:
+          type: string
+          description: A classificação da carteira recomendada
+          example: "AREA_PUBLICA"
+        topics:
+          type: array
+          description: Lista de tópicos relacionados a carteira recomendada
+          example:
+            - "tópico 1"
+            - "tópico 2"
+        validityFinal:
+          type: string
+          format: date-time
+          description: O fim da vigência da carteira
+          example: "2026-03-31T00:00:00.000-03:00"
+        validityInitial:
+          type: string
+          format: date-time
+          description: O inicio da vigência da carteira
+          example: "2026-03-02T00:00:00.000-03:00"  
+    EquitiesAnalysisResponseDTO:
+      type: object
+      title: Retorno da análise de carteira recomendada para o Parceiro
+      properties:
+        analyzeAsset:
+          type: array
+          description: Lista de ativos analisados
+          items:
+            $ref: "#/components/schemas/AssetDTO"
+        analyzeComponents:
+          type: array
+          description: Lista de componentes da análise
+          items:
+            $ref: "#/components/schemas/ComponentDTO"
+        analyzeTickers:
+          type: array
+          description: Lista de tickers da análise
+          example: 
+            - "NVDC34"
+        authors:
+          type: array
+          description: Lista de autores da análise
+          items:
+            $ref: "#/components/schemas/AuthorsAnalysisDTO"
+        caption:
+          type: string
+          description: A legenda da análise
+          example: "Análise | NVDC34"
+        featuredAnalyze:
+          type: boolean
+          description: Indicador se a análise é destaque ou não
+          example: false
+        id:
+          type: string
+          description: Identificador único
+          example: "69a04226de8714273cfd0f5d"
+        referenceDate:
+          type: string
+          format: date-time
+          description: A data de referência da análise
+          example: "2026-02-26T09:52:53.913"
+        riskStatement:
+          type: string
+          description: A declaração de risco da análise
+          example: "Declaração de risco da análise"
+        segments:
+          type: array
+          description: Lista de segmentos relacionados a análise
+          example:
+            - "DIGITAL"
+            - "WM"
+            - "NECTON"
+        tier:
+          type: string
+          description: A classificação da análise
+          example: "AREA_PUBLICA"
+    AssetDTO:
+      type: object
+      properties:
+        sector:
+          $ref: "#/components/schemas/SectorDTO"
+        ticker:
+          type: string
+          description: ticker do ativo
+          example: "BBAS3"
+        company:
+          type: string
+          description: O nome da empresa do ativo
+          example: "Banco do Brasil"
+        image:
+          type: string
+          description: URL da imagem do ativo
+          example: "https://content.btgpactual.com/research/files/media/ativos/BBAS.png"
+    AssetsDTO:
+      type: object
+      properties:
+        asset:
+          $ref: "#/components/schemas/AssetDTO"
+        weight:
+          description: O peso do ativo na carteira, aqueles % que aparecem do lado do ativo
+          example: 5
+          type: integer
+          format: int32
+    SectorDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          description: O nome do setor do ativo
+          example: "Tecnologia"
+        locale:
+          type: string
+          description: A localidade do setor do ativo
+          example: "pt-BR"
+        sectorIndicator:
+          type: string
+          description: Indicador do setor do ativo
+          example: "BDR"
+    FiltersDTO:
+      type: object
+      properties:
+        categories:
+          type: array
+          description: Lista de categorias para consulta
+          example:
+            - "categoria1"
+            - "categoria2"
+    RequestOperationsDTO:
+      type: object
+      properties:
+        portfolioType:
+          type: string
+          description: Tipo de portifolio
+          example: "FII"
+        accountNumber:
+          type: string
+          description: Número da conta para consulta de operações
+          example: "003344556"
+        startDate:
+          type: string
+          description: Position start date
+          format: date
+          example: "2018-01-01"
+        endDate:
+          type: string
+          description: Position end date
+          format: date
+          example: "2018-01-30"
+    OperationResponseDTO:
+      type: object
+      title: Retorno da busca de Operações
+      properties:
+        accountNumber:
+          type: string
+          description: Número da conta informada
+          example: "003344556"
+        accountName:
+          type: string
+          description: Nome do titular da conta
+          example: "Maria José"
+        contracts:
+          type: array
+          description: Lista de contratações
+          items:
+            $ref: "#/components/schemas/ContractsDTO"
+    ContractsDTO:
+      type: object
+      properties:
+        contractId:
+          type: integer
+          description: Identificador único do contrato
+          example: 1234
+        portfolioType:
+          type: string
+          description: Tipo do Portfólio
+          example: "10SIM"
+        effectiveDate:
+          type: string
+          description: Data da operação
+          example: "01/01/2001"
+        active:
+          type: boolean
+          description: Flag indicativa de ativação ou inativação
+          example: true
+        operations:
+          type: array
+          description: Lista de Operações
+          items:
+            $ref: "#/components/schemas/OperationDTO"
+    OperationDTO:
+      type: object
+      properties:
+        portfolioOperationId:
+          type: integer
+          description: Identificador único do item do portfólio
+          example: 1190815
+        operationDateAt:
+          type: string
+          description: Data da operação
+          example: "03/12/2024"
+        operationOrigin:
+          type: string
+          description: Origem da operação
+          example: "REBALANCEAMENTO"
+        operationType:
+          type: string
+          description: Tipo da operação
+          example: "COMPRA"
+        operationsAssets:
+          type: array
+          description: Lista de ativos
+          items:
+            $ref: "#/components/schemas/OperationAssetDTO"
+    OperationAssetDTO:
+      type: object
+      properties:
+        assetName:
+          type: string
+          description: Nome do ativo
+          example: "WEGE3"
+        assetQtd:
+          type: integer
+          description: Quantidade de ativos
+          example: 43
+        assetAveragePrice:
+          type: number
+          description: Preço por ativo
+          example: 54.62
+        operationBalance:
+          type: number
+          description: Valor total da operação
+          example: 2348.61
+    AuthorsDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identificador do autor
+          example: "222"
+        name:
+          type: string
+          description: Nome do autor
+          example: "Luis Mollo, CFA"
+        image:
+          type: string
+          description: URL da imagem do autor
+          example: "https://content.btgpactual.com/research/files/media/2021-08-12T170756.127_blob"
+        local:
+          type: string
+          description: Local do autor
+          example: "São Paulo"
+        email:
+          type: string
+          description: Email do autor
+          example: "Analise.Acoes@btgpactual.com"
+        team:
+          type: object
+          description: O time do autor
+          properties:
+            id:
+              type: string
+              description: Identificador do time
+              example: "1"
+            name:
+              type: string
+              description: Nome do time
+              example: "Research"
+    InAssetsDTO:
+      type: object
+      properties:
+        asset:
+          type: object
+          description: O ativo da carteira recomendada
+          properties:
+            company:
+              type: string
+              description: O nome da empresa do ativo
+              example: "PetroRio"
+            currentFundamentals:
+              type: object
+              description: Os fundamentos atuais do ativo
+              properties:
+                evEbitda:
+                  type: string
+                  description: EV/EBITDA
+                  example: "7.9655872639"
+                pl:
+                  type: string
+                  description: PL
+                  example: "4.4479074882"
+                pvp:
+                  type: string
+                  description: PVP
+                  example: "1.7017723444"
+            image:
+              type: string
+              description: URL da imagem do ativo
+              example: "https://content.btgpactual.com/research/files/media/ativos/PRIO.png"
+            sector:
+              type: object
+              description: O setor do ativo
+              properties:
+                description:
+                  type: string
+                  description: Descrição do setor do ativo
+                  example: "Petróleo & Gás"
+                name:
+                  type: string
+                  description: O nome do setor do ativo
+                  example: "Petróleo & Gás"
+                sectorIndicator:
+                  type: string
+                  description: Indicador do setor do ativo
+                  example: "ACAO"
+            ticker:
+              type: string
+              description: ticker do ativo
+              example: "PRIO3"
+        weight:
+          type: number
+          description: O peso do ativo na carteira
+          example: 5
+    SectorAllocationDTO:
+      type: object
+      properties:
+        percent:
+          type: number
+          description: Percentual do setor na carteira
+          example: 5
+        sector:
+          type: object
+          description: Informações do setor
+          properties:
+            description:
+              type: string
+              description: Descrição do setor
+              example: "Materiais Básicos"
+            name:
+              type: string
+              description: Nome do setor
+              example: "Materiais Básicos"
+            sectorIndicator:
+              type: string
+              description: Indicador do setor
+              example: "BDR"
+    PortfolioAssetDTO:
+      type: object
+      properties:
+        asset:
+          type: object
+          description: O ativo da carteira recomendada
+          properties:
+            company:
+              type: string
+              description: O nome da empresa do ativo
+              example: "Axia Energia"
+            currentFundamentals:
+              type: object
+              description: Os fundamentos atuais do ativo
+              properties:
+                evEbitda:
+                  type: string
+                  description: EV/EBITDA
+                  example: "7.9655872639"
+                pl:
+                  type: string
+                  description: PL
+                  example: "4.4479074882"
+                pvp:
+                  type: string
+                  description: PVP
+                  example: "1.7017723444"
+            image:
+              type: string
+              description: URL da imagem do ativo
+              example: "https://content.btgpactual.com/research/files/media/ativos/AXIA.png"
+            sector:
+              type: object
+              description: O setor do ativo
+              properties:
+                description:
+                  type: string
+                  description: Descrição do setor do ativo
+                  example: "Materiais Básicos"
+                name:
+                  type: string
+                  description: O nome do setor do ativo
+                  example: "Serviços Básicos"
+                sectorIndicator:
+                  type: string
+                  description: Indicador do setor do ativo
+                  example: "ACAO"
+            ticker:
+              type: string
+              description: ticker do ativo
+              example: "AXIA3"
+        weight:
+          type: number
+          description: O peso do ativo na carteira
+          example: 10
+    OutAssetsDTO:
+      type: object
+      properties:
+        asset:
+          type: object
+          description: O ativo que saiu da carteira recomendada
+          properties:
+            company:
+              type: string
+              description: O nome da empresa do ativo
+              example: "Sanepar"
+            currentFundamentals:
+              type: object
+              description: Os fundamentos atuais do ativo
+              properties:
+                evEbitda:
+                  type: string
+                  description: EV/EBITDA
+                  example: "19.798790303"
+                pl:
+                  type: string
+                  description: PL
+                  example: "21.189567235"
+                pvp:
+                  type: string
+                  description: PVP
+                  example: "1.4689924657"
+            image:
+              type: string
+              description: URL da imagem do ativo
+              example: "https://content.btgpactual.com/research/files/media/ativos/SAPR.png"
+            sector:
+              type: object
+              description: O setor do ativo
+              properties:
+                description:
+                  type: string
+                  description: Descrição do setor do ativo
+                  example: " "
+                name:
+                  type: string
+                  description: O nome do setor do ativo
+                  example: "Serviços Básicos"
+                sectorIndicator:
+                  type: string
+                  description: Indicador do setor do ativo
+                  example: "ACAO"
+            ticker:
+              type: string
+              description: ticker do ativo
+              example: "SAPR11"
+        weight:
+          type: number
+          description: O peso do ativo na carteira
+          example: 5
+    PagingDTO:
+      type: object
+      properties:
+        pageNumber:
+          type: integer
+          description: Número da página atual
+          example: 1
+        pageSize:
+          type: integer
+          description: Quantidade de itens por página
+          example: 10
+        totalResults:
+          type: integer
+          description: Total de elementos disponíveis
+          example: 100
+    AuthorsAnalysisDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identificador do autor
+          example: "222"
+        name:
+          type: string
+          description: Nome do autor
+          example: "Luis Mollo, CFA"
+        image:
+          type: string
+          description: URL da imagem do autor
+          example: "https://content.btgpactual.com/research/files/media/2021-08-12T170756.127_blob"
+        local:
+          type: string
+          description: Local do autor
+          example: "São Paulo"
+        email:
+          type: string
+          description: Email do autor
+          example: "Analise.Acoes@btgpactual.com"
+    ComponentDTO:
+      type: object
+      properties:
+        body:
+          type: string
+          description: O nome do componente da análise
+          example: "<p>Resumo</p>"
+        category:
+          type: object
+          description: O conteúdo do componente da análise
+          properties:
+            initials:
+              type: string
+              description: As iniciais do componente da análise
+              example: "BDR"
+            name:
+              type: string
+              description: O nome do componente da análise
+              example: "BDR"
+            locale:
+              type: string
+              description: O local do componente da análise
+              example: "pt-BR"
+        file:
+          type: string
+          description: O arquivo do componente da análise
+          example: "https://content.btgpactual.com/research/files/file/pt-BR/2026-02-26T095744.128_Nvidia__NVDA____Resultados_do_4T25.pdf"
+        filesAppend:
+          type: array
+          description: Lista de arquivos adicionais do componente da análise
+          example: 
+            - "https://content.btgpactual.com/research/files/file/pt-BR/2026-02-26T095744.128_Nvidia__NVDA____Resultados_do_4T25.pdf"
+        insertionDate:
+          type: string
+          description: A data de inserção do componente da análise
+          example: "Thu Feb 26 09:52:53 BRT 2026"
+        introduction:
+          type: string
+          description: A introdução do componente da análise
+          example: "Introdução do componente da análise"
+        isSectorial:
+          type: boolean
+          description: Indicador se o componente da análise é setorial ou não
+          example: false
+        noTagsBody:
+          type: string
+          description: O nome do componente da análise sem as tags de formatação
+          example: "Resumo"
+        subCategories:
+          type: array
+          description: Lista de subcategorias do componente da análise
+          items:
+            $ref: '#/components/schemas/SubCategoriesDTO'
+        teamName:
+          type: string
+          description: O nome do time do componente da análise
+          example: "Research"
+        title:
+          type: string
+          description: O título do componente da análise
+          example: "Nvidia (NVDA): Resultados do 4T25"
+    SubCategoriesDTO:
+      type: object
+      properties:
+        description:
+          type: string
+          description: O nome da subcategoria
+          example: "Ações"
+        id:
+          type: string
+          description: Identificador da subcategoria
+          example: "1"
+        locale:
+          type: string
+          description: O local da subcategoria
+          example: "pt-BR"
+        name:
+          type: string
+          description: O nome da subcategoria
+          example: "Ações"

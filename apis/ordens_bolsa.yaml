@@ -1,0 +1,160 @@
+openapi: 3.0.1
+info:
+  title: API de Consulta de Ordens de Bolsa
+  description: API responsável por consultar ordens de bolsa
+  version: 3.1.0.2
+servers:
+  - url: https://api.btgpactual.com/iaas-stock-order
+paths:
+  /api/v1/stock-order/orders:
+    post:
+      tags:
+        - post-stock-orders
+      summary: Requisição de ordens de bolsa.
+      description: |
+        Endpoint responsável pela requisição de todas as ordens da bolsa.
+
+        **O intervalo entre o "startDate" e o "endDate" deve ser de no máximo 3 dias.**
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Consulta de Ordens da Bolsa (query-stock-order)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona.
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+      operationId: getOrdersByAccountAndPeriod
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StockOrderDTO"
+      responses:
+        "202":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              description: Id pactual da operação
+              style: simple
+              schema:
+                type: string
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ErrorMetadata:
+      type: object
+      properties:
+        globalErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Error"
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: object
+    ResponseError:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        meta:
+          $ref: "#/components/schemas/ErrorMetadata"
+    StockOrderDTO:
+      type: object
+      properties:
+        startDate:
+          type: string
+          description: O período máximo para consulta de ordens é de 30 dias
+          format: date
+          example: "2021-02-01"
+        endDate:
+          type: string
+          description: O período máximo para consulta de ordens é de 30 dias
+          format: date
+          example: "2021-02-03"
+        accounts:
+          type: array
+          description: Lista de contas a serem pesquisadas
+          example:
+            - "123456789"
+            - "000152633"
+          items:
+            type: string
+            description: Lista de contas a serem pesquisadas
+            example: '["123456789","000152633"]'
+        side:
+          type: string
+          description: Direção da operação
+          example: compra
+        status:
+          type: array
+          description: Lista de status da ordem
+          example:
+            - executada
+            - executada parcialmente
+          items:
+            type: string
+            description: Lista de status da ordem
+            example: '["executada","executada parcialmente"]'
+        strategy:
+          type: string
+          description: Estratégia usada na ordem
+          example: DAYTRADE
+        symbol:
+          type: string
+          description: "Símbolo do ativo, também conhecido como ticker"
+          example: ITSA4
+      description: Model DTO utilizado no body da requisição

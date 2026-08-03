@@ -1,0 +1,18 @@
+[
+    {
+        "name":"Fundos",
+        "file":"fundos.yaml"
+    },
+    {
+        "name":"Conta Corrente",
+        "file":"conta.yaml"
+    },
+    {
+        "name":"PIX",
+        "file":"pix.yaml"
+    },
+    {
+        "name":"Câmbio",
+        "file":"cambio.yaml"
+    }
+]
