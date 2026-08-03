@@ -97,13 +97,14 @@ jobs:
       # 5. Consolidar todas as APIs
       # ==========================================
 
-      - name: Consolidar especificações OpenAPI
+      - name: Validar e consolidar especificações OpenAPI
 
         run: |
 
           python <<'PY'
 
           import os
+          import sys
           import yaml
           import copy
 
@@ -115,12 +116,151 @@ jobs:
 
           print("")
           print("========================================")
-          print("CONSOLIDAÇÃO DAS APIs")
+          print("VALIDAÇÃO DAS APIs")
           print("========================================")
           print("")
 
 
-          # Documento OpenAPI final
+          # ==================================================
+          # 1. Encontrar todos os YAMLs
+          # ==================================================
+
+          files = [
+
+              filename
+
+              for filename in sorted(
+                  os.listdir(APIS_DIR)
+              )
+
+              if filename.lower().endswith(
+                  (".yaml", ".yml")
+              )
+
+          ]
+
+
+          print(
+              f"Arquivos encontrados: {len(files)}"
+          )
+
+          print("")
+
+
+          if not files:
+
+              print(
+                  "ERRO: Nenhum arquivo YAML encontrado."
+              )
+
+              sys.exit(1)
+
+
+          # ==================================================
+          # 2. Procurar TABs antes do parse
+          # ==================================================
+
+          files_with_tabs = []
+
+
+          for filename in files:
+
+
+              filepath = os.path.join(
+                  APIS_DIR,
+                  filename
+              )
+
+
+              with open(
+                  filepath,
+                  "r",
+                  encoding="utf-8"
+              ) as file:
+
+                  lines = file.readlines()
+
+
+              for line_number, line in enumerate(
+                  lines,
+                  start=1
+              ):
+
+
+                  if "\t" in line:
+
+
+                      files_with_tabs.append({
+
+                          "file": filename,
+
+                          "line": line_number,
+
+                          "content":
+                              line.rstrip()
+
+                      })
+
+
+          if files_with_tabs:
+
+
+              print("")
+              print(
+                  "========================================"
+              )
+
+              print(
+                  "ERRO: TABS ENCONTRADOS"
+              )
+
+              print(
+                  "========================================"
+              )
+
+              print("")
+
+
+              for item in files_with_tabs:
+
+
+                  print(
+                      f"Arquivo: {item['file']}"
+                  )
+
+                  print(
+                      f"Linha: {item['line']}"
+                  )
+
+                  print(
+                      f"Conteúdo: {item['content']}"
+                  )
+
+                  print("")
+
+
+              print(
+                  "Corrija os TABs acima."
+              )
+
+              print(
+                  "Use espaços para indentação YAML."
+              )
+
+
+              sys.exit(1)
+
+
+          print(
+              "Nenhum TAB encontrado."
+          )
+
+          print("")
+
+
+          # ==================================================
+          # 3. Estrutura OpenAPI consolidada
+          # ==================================================
 
           consolidated = {
 
@@ -128,14 +268,14 @@ jobs:
 
               "info": {
 
-                  "title": "BTG Developer APIs",
+                  "title":
+                      "BTG Developer APIs",
 
-                  "version": "1.0.0",
+                  "version":
+                      "1.0.0",
 
-                  "description": (
-                      "Documentação consolidada das APIs "
-                      "BTG Developer APIs."
-                  )
+                  "description":
+                      "Documentação consolidada das APIs BTG Developer APIs."
 
               },
 
@@ -150,25 +290,18 @@ jobs:
           }
 
 
-          # Contadores
-
           total_apis = 0
 
           total_paths = 0
 
-
-          # ========================================
-          # Percorre todos os YAMLs
-          # ========================================
-
-          for filename in sorted(os.listdir(APIS_DIR)):
+          validation_errors = []
 
 
-              if not filename.lower().endswith(
-                  (".yaml", ".yml")
-              ):
+          # ==================================================
+          # 4. Processar cada API
+          # ==================================================
 
-                  continue
+          for filename in files:
 
 
               filepath = os.path.join(
@@ -182,32 +315,64 @@ jobs:
               )
 
 
-              # Carrega YAML
-
-              with open(
-                  filepath,
-                  "r",
-                  encoding="utf-8"
-              ) as file:
-
-                  api = yaml.safe_load(file)
+              try:
 
 
-              if not api:
+                  with open(
+                      filepath,
+                      "r",
+                      encoding="utf-8"
+                  ) as file:
+
+                      api = yaml.safe_load(file)
+
+
+              except Exception as error:
+
 
                   print(
-                      f"AVISO: {filename} está vazio."
+                      f"ERRO ao processar {filename}"
                   )
+
+                  print(
+                      str(error)
+                  )
+
+
+                  validation_errors.append({
+
+                      "file": filename,
+
+                      "error": str(error)
+
+                  })
+
 
                   continue
 
 
-              total_apis += 1
+              if not isinstance(
+                  api,
+                  dict
+              ):
 
 
-              # ====================================
-              # Nome da API
-              # ====================================
+                  validation_errors.append({
+
+                      "file": filename,
+
+                      "error":
+                          "Documento YAML inválido ou vazio."
+
+                  })
+
+
+                  continue
+
+
+              # ==================================================
+              # Nome
+              # ==================================================
 
               api_title = (
 
@@ -215,7 +380,9 @@ jobs:
                   .get("info", {})
                   .get(
                       "title",
-                      os.path.splitext(filename)[0]
+                      os.path.splitext(
+                          filename
+                      )[0]
                   )
 
               )
@@ -226,46 +393,63 @@ jobs:
               )
 
 
-              # ====================================
-              # Adiciona TAG da API
-              # ====================================
-
-              api_tag = {
-
-                  "name": api_title,
-
-                  "description":
-                      f"Endpoints da {api_title}"
-
-              }
+              total_apis += 1
 
 
-              consolidated[
-                  "tags"
-              ].append(api_tag)
+              # ==================================================
+              # TAG
+              # ==================================================
+
+              tag_exists = any(
+
+                  tag["name"] == api_title
+
+                  for tag in consolidated[
+                      "tags"
+                  ]
+
+              )
 
 
-              # ====================================
-              # Servers
-              # ====================================
+              if not tag_exists:
+
+
+                  consolidated[
+                      "tags"
+                  ].append({
+
+                      "name":
+                          api_title,
+
+                      "description":
+                          f"Endpoints da {api_title}"
+
+                  })
+
+
+              # ==================================================
+              # SERVERS
+              # ==================================================
 
               for server in api.get(
                   "servers",
                   []
               ):
 
+
                   if server not in consolidated[
                       "servers"
                   ]:
+
 
                       consolidated[
                           "servers"
                       ].append(server)
 
 
-              # ====================================
+              # ==================================================
               # PATHS
-              # ====================================
+              # ==================================================
 
               for path, methods in api.get(
                   "paths",
@@ -276,17 +460,10 @@ jobs:
                   total_paths += 1
 
 
-                  # Cria uma cópia para não alterar
-                  # o YAML original
-
                   methods_copy = copy.deepcopy(
                       methods
                   )
 
-
-                  # ==================================
-                  # Adiciona TAG automaticamente
-                  # ==================================
 
                   for method, operation in methods_copy.items():
 
@@ -299,52 +476,67 @@ jobs:
                           continue
 
 
-                      # Ignora parâmetros globais
-
                       if method.lower() == "parameters":
 
                           continue
 
 
-                      # Se não tiver tags,
-                      # usa o nome da API
-
                       if not operation.get(
                           "tags"
                       ):
 
+
                           operation[
                               "tags"
                           ] = [
+
                               api_title
+
                           ]
 
 
-                  # ==================================
-                  # Se o PATH já existir
-                  # ==================================
+                  # ==========================================
+                  # Path já existe
+                  # ==========================================
 
                   if path in consolidated[
                       "paths"
                   ]:
 
 
-                      print(
-                          "  AVISO: Path duplicado:"
-                      )
-
-                      print(
-                          f"  {path}"
-                      )
+                      for method, operation in methods_copy.items():
 
 
-                      # Junta os métodos
+                          if method in consolidated[
+                              "paths"
+                          ][path]:
 
-                      consolidated[
-                          "paths"
-                      ][path].update(
-                          methods_copy
-                      )
+
+                              print("")
+
+                              print(
+                                  "AVISO: Endpoint duplicado:"
+                              )
+
+                              print(
+                                  f"  {method.upper()} {path}"
+                              )
+
+                              print(
+                                  f"  API: {api_title}"
+                              )
+
+                              print(
+                                  "  Mantendo a primeira definição."
+                              )
+
+
+                          else:
+
+
+                              consolidated[
+                                  "paths"
+                              ][path][method] = operation
 
 
                   else:
@@ -355,9 +547,9 @@ jobs:
                       ][path] = methods_copy
 
 
-              # ====================================
+              # ==================================================
               # COMPONENTS
-              # ====================================
+              # ==================================================
 
               components = api.get(
                   "components",
@@ -372,6 +564,7 @@ jobs:
                       "components"
                   ]:
 
+
                       consolidated[
                           "components"
                       ][component_type] = {}
@@ -380,21 +573,9 @@ jobs:
                   for name, value in values.items():
 
 
-                      if name in consolidated[
+                      if name not in consolidated[
                           "components"
                       ][component_type]:
-
-
-                          print(
-                              "  AVISO: Componente duplicado:"
-                          )
-
-                          print(
-                              f"  {component_type}/{name}"
-                          )
-
-
-                      else:
 
 
                           consolidated[
@@ -404,9 +585,44 @@ jobs:
                           ] = value
 
 
-          # ==========================================
-          # Remove components vazios
-          # ==========================================
+                      else:
+
+
+                          # ======================================
+                          # Componente duplicado
+                          # ======================================
+
+                          existing = consolidated[
+                              "components"
+                          ][component_type][name]
+
+
+                          if existing != value:
+
+
+                              print("")
+
+                              print(
+                                  "AVISO: Componente duplicado"
+                                  " com definições diferentes:"
+                              )
+
+                              print(
+                                  f"  {component_type}/{name}"
+                              )
+
+                              print(
+                                  f"  API atual: {api_title}"
+                              )
+
+                              print(
+                                  "  Mantendo a primeira definição."
+                              )
+
+
+          # ==================================================
+          # 5. Remover componentes vazios
+          # ==================================================
 
           consolidated[
               "components"
@@ -423,15 +639,55 @@ jobs:
           }
 
 
-          # ==========================================
-          # Salva arquivo final
-          # ==========================================
+          # ==================================================
+          # 6. Se houve erro, interrompe
+          # ==================================================
+
+          if validation_errors:
+
+
+              print("")
+
+              print(
+                  "========================================"
+              )
+
+              print(
+                  "FALHA NA VALIDAÇÃO"
+              )
+
+              print(
+                  "========================================"
+              )
+
+
+              for item in validation_errors:
+
+
+                  print("")
+
+                  print(
+                      f"Arquivo: {item['file']}"
+                  )
+
+                  print(
+                      f"Erro: {item['error']}"
+                  )
+
+
+              sys.exit(1)
+
+
+          # ==================================================
+          # 7. Salvar
+          # ==================================================
 
           with open(
               OUTPUT_FILE,
               "w",
               encoding="utf-8"
           ) as file:
+
 
               yaml.safe_dump(
 
@@ -441,7 +697,9 @@ jobs:
 
                   allow_unicode=True,
 
-                  sort_keys=False
+                  sort_keys=False,
+
+                  default_flow_style=False
 
               )
 
@@ -453,7 +711,7 @@ jobs:
           )
 
           print(
-              "CONSOLIDAÇÃO CONCLUÍDA"
+              "CONSOLIDAÇÃO CONCLUÍDA COM SUCESSO"
           )
 
           print(
@@ -461,7 +719,7 @@ jobs:
           )
 
           print(
-              f"APIs encontradas: {total_apis}"
+              f"APIs processadas: {total_apis}"
           )
 
           print(
@@ -476,7 +734,6 @@ jobs:
 
 
           PY
-
 
       # ==========================================
       # 6. Exibir arquivo consolidado
