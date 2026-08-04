@@ -3834,7 +3834,7 @@ components:
           example: "Não Contratado"
         assessor:
           type: string
-          description: Assessor	Assessor responsável pela carteira do cliente.
+          description: Assessor responsável pela carteira do cliente.
           example: "João José"
         cd_cge_partner:
           type: string
